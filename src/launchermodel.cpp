@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QDir>
+#include <QUuid>
 
 LauncherModel::LauncherModel(QObject *parent) :
     QAbstractListModel(parent), entriesDirPath(QDir::homePath() + "/.local/share/applications")
@@ -47,6 +48,19 @@ QHash<int, QByteArray> LauncherModel::roleNames() const
     return roles;
 }
 
+QVariantMap LauncherModel::get(int row) {
+    QHash<int, QByteArray> names = roleNames();
+    QHashIterator<int, QByteArray> i(names);
+    QVariantMap res;
+    while (i.hasNext()) {
+        i.next();
+        QModelIndex idx = index(row, 0);
+        QVariant data = idx.data(i.key());
+        res[i.value()] = data;
+        qDebug() << i.key() << ": " << i.value() << endl;
+    }
+    return res;
+}
 QStringList LauncherModel::runners() const {
     QStringList runners;
     runners << "firefox";
@@ -127,8 +141,10 @@ bool LauncherModel::setData(const QModelIndex & index, const QVariant & value, i
     emit dataChanged(index, index);
 }
 
-void LauncherModel::create(QString name, QString icon, QString categories, QString, QString runner, QString url, QString comment) {
-    QString filePath = entriesDirPath + "/" + name.simplified().toLower().replace(" ","_") + ".desktop";
+void LauncherModel::create(QString name, QString icon, QString categories, QString runner, QString url, QString comment) {
+    QString fileName = QUuid::createUuid().toString().toLower().remove('{').remove('}');
+    QString filePath = entriesDirPath + "/" + fileName + ".desktop";
+    qDebug() << "Creating new object " << filePath;
     QVariantMap properties;
     properties["Name"] = name;
     properties["Icon"] = icon;
@@ -140,15 +156,23 @@ void LauncherModel::create(QString name, QString icon, QString categories, QStri
     properties["Exec"] = generateExec(runner, url);
     properties["IceUtility"] = true;
 
-    entriesPaths.append(filePath);
-    entries[filePath] = properties;
+    properties["Type"] = "Application";
+
+
 
     saveToFile(filePath, properties);
 
+    int last = entriesPaths.size();
+    beginInsertRows(QModelIndex(), 0, 0);
+
+    entries[filePath] = properties;
+    entriesPaths << filePath;
+
+    endInsertRows();
     emit countChanged();
 }
 
-void LauncherModel::update(int index, QString name, QString icon, QString categories, QString, QString runner, QString url, QString comment) {
+void LauncherModel::update(int index, QString name, QString icon, QString categories, QString runner, QString url, QString comment) {
     if (index < 0 || index >= entriesPaths.size())
         return;
 
@@ -173,11 +197,15 @@ void LauncherModel::remove(int index) {
         return;
 
     QString filePath = entriesPaths[index];
+
+    beginRemoveRows(QModelIndex(), index, index);
     entriesPaths.removeOne(filePath);
     entries.remove(filePath);
+    endRemoveRows();
 
     QFile file(filePath);
     file.remove();
+
 
     emit countChanged();
 }
@@ -187,21 +215,24 @@ QString LauncherModel::generateExec(QString runner, QString url) {
         return QString("firefox %1").arg(url);
     else if (runner.compare("chromiun") == 0)
         return QString("chromium --kiosk %1").arg(url);
+
+    return "";
 }
 
 void LauncherModel::saveToFile(QString path, QVariantMap properties) {
     qDebug() << "Saving entry: " << path;
     QSettings settings(path, QSettings::IniFormat);
     settings.beginGroup("Desktop Entry");
+
     for (QString key: properties.keys())
         settings.setValue(key,properties[key]);
+
     settings.endGroup();
 }
 
 QVariantMap LauncherModel::loadFromFile(QString path) {
     qDebug() << "Loading entry: " << path;
     QSettings settings(path, QSettings::IniFormat);
-
     settings.beginGroup("Desktop Entry");
 
     QVariantMap properties;

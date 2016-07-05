@@ -25,8 +25,7 @@ INCLUDE_DIRECTORIES(
 )
 
 
-ADD_EXECUTABLE(${PROJECT_NAME} WIN32 ${Project_Resources} ${Project_Srcs})
-
+ADD_EXECUTABLE(${PROJECT_NAME} ${Project_Resources} ${Project_Srcs})
 
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} Qt5::Quick ${Project_3D_PARTY_LIBRARIES})

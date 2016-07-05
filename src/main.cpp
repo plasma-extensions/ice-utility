@@ -20,9 +20,5 @@ int main(int argc, char *argv[])
     quickView.setResizeMode(QQuickView::SizeRootObjectToView);
     quickView.show();
 
-
-
-
-
     return app.exec();
 }

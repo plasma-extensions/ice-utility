@@ -38,6 +38,9 @@ public:
     LauncherModel(QObject *parent = 0);
     QHash< int, QByteArray > roleNames() const Q_DECL_OVERRIDE;
 
+    Q_INVOKABLE QVariantMap get(int row);
+
+
     QStringList runners() const;
 
     int rowCount(const QModelIndex&) const Q_DECL_OVERRIDE;
@@ -50,8 +53,8 @@ signals:
     void countChanged();
 
 public slots:
-    void create(QString name, QString icon, QString categories, QString, QString runner, QString url, QString comment);
-    void update(int index, QString name, QString icon, QString categories, QString, QString runner, QString url, QString comment);
+    void create(QString name, QString icon, QString categories, QString runner, QString url, QString comment);
+    void update(int index, QString name, QString icon, QString categories, QString runner, QString url, QString comment);
     void remove(int index);
 
 private:
