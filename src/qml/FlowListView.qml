@@ -34,26 +34,57 @@ Flickable {
     property alias flow: flow.flow
     property alias model: repeater.model
     property alias spacing: flow.spacing
+    property var highlight;
+    property bool highlightFollowsCurrentItem: false;
+    property var highlightItem;
 
     onCurrentIndexChanged: {
-        currentItem = model.get(currentIndex)
+        // currentItem = model.get(flowListView.currentIndex)
+        currentItem = repeater.itemAt(flowListView.currentIndex)
+
+        if (flowListView.highlightFollowsCurrentItem && flowListView.highlight)
+            refreshHighlightItemPosition(flowListView.currentIndex)
     }
 
-    Flow {
-        id: flow
-        width: parent.width
+    function refreshHighlightItemPosition(index) {
+        var uiItem = repeater.itemAt(index);
 
-        Repeater {
-            id: repeater
+        if (!uiItem)
+            highlightItem.visible = false;
+        else
+            highlightItem.visible = true;
 
-            onCountChanged: {
-                if (flowListView.currentIndex === -1 && count > 0) {
-                    flowListView.currentIndex = 0
-                }
-                if (flowListView.currentIndex >= count) {
-                    flowListView.currentIndex = count - 1
+        highlightItem.x = Qt.binding(function () {return uiItem.x});
+        highlightItem.y = Qt.binding(function () {return uiItem.y});
+        highlightItem.width = Qt.binding(function () {return uiItem.width;});
+        highlightItem.height = Qt.binding(function () {return uiItem.height});
+    }
+
+    Item {
+        id: listContainer;
+        anchors.fill: parent;
+        Flow {
+            id: flow
+            width: parent.width
+
+            Repeater {
+                id: repeater
+
+                onCountChanged: {
+                    if (flowListView.currentIndex === -1 && count > 0) {
+                        flowListView.currentIndex = 0
+                    }
+                    if (flowListView.currentIndex >= count) {
+                        flowListView.currentIndex = count - 1
+                    }
                 }
             }
+
+        }
+
+        Component.onCompleted: {
+            highlightItem = highlight.createObject(listContainer, {"layer.enabled": false, z: -100})
+            refreshHighlightItemPosition(flowListView.currentIndex)
         }
     }
 }

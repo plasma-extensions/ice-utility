@@ -45,7 +45,7 @@ public:
 
     int rowCount(const QModelIndex&) const Q_DECL_OVERRIDE;
     int count() const;
-    QVariant data(const QModelIndex&, int) const Q_DECL_OVERRIDE;
+    QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
     bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
 
 
@@ -54,7 +54,6 @@ signals:
 
 public slots:
     void create(QString name, QString icon, QString categories, QString runner, QString url, QString comment);
-    void update(int index, QString name, QString icon, QString categories, QString runner, QString url, QString comment);
     void remove(int index);
 
 private:

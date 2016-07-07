@@ -14,13 +14,7 @@ import com.plasma_light.ice_utility 1.0
 Rectangle {
     width: 824;
     height: 530;
-    color: PlasmaCore.Theme.backgroundColor
 
-    Component.onCompleted: {
-        print ("PlasmaCore: ")
-        for(var k in PlasmaCore)
-            print (k + " : " + PlasmaCore[k])
-    }
     Launchers {
         id: launchers;
     }
@@ -53,8 +47,14 @@ Rectangle {
             rowSpacing: 12;
 
 
-            TextField {id: urlInput; placeholderText: i18n("Application url"); text : model.currentItem.url; Layout.fillWidth : true;}
+            TextField {
+                id: urlInput;
+                placeholderText: i18n("Application url");
+                Layout.fillWidth : true;
 
+                text : list.currentItem.dataModel.url;
+                onEditingFinished: list.currentItem.dataModel.url = text;
+            }
 
             ComboBox {
                 id: categoryInput;
@@ -69,7 +69,14 @@ Rectangle {
                 }
 
 
-            TextField {id: nameInput; placeholderText: i18n("Application name"); text : model.currentItem.name; Layout.fillWidth : true}
+            TextField {
+                id: nameInput;
+                Layout.fillWidth : true;
+
+                placeholderText: i18n("Application name");
+                text : list.currentItem.dataModel.name;
+                onEditingFinished: list.currentItem.dataModel.name = text;
+            }
 
             ComboBox {
                 id: runnerInput;
@@ -79,7 +86,7 @@ Rectangle {
 
             RowLayout {
                 Layout.columnSpan: 2;
-                TextField {id: customIconInput; placeholderText: i18n("Icon name or path"); text : model.currentItem.icon; Layout.fillWidth: true}
+                TextField {id: customIconInput; placeholderText: i18n("Icon name or path"); Layout.fillWidth: true}
 
 
                 Button {
@@ -91,7 +98,14 @@ Rectangle {
                 }
 
             }
-            TextField {id: descriptionInput; placeholderText: i18n("Application description"); text : model.currentItem.comment; Layout.fillWidth : true}
+            TextField {
+                id: descriptionInput;
+                placeholderText: i18n("Application description");
+                Layout.fillWidth : true
+
+                text : list.currentItem.dataModel.comment;
+                onEditingFinished: list.currentItem.dataModel.comment = text;
+            }
 
         }
     }
@@ -120,7 +134,7 @@ Rectangle {
             Button{
                 text: "add"; iconName: "list-add";
                 onClicked: {
-                    launchers.create("new launcher","preferences-web-browser-shortcuts","Internet;","","http://mysiteapp.com","short description");
+                    launchers.create("","preferences-web-browser-shortcuts","","","","");
                     list.currentIndex = launchers.count - 1;
                 }
             }
@@ -135,13 +149,19 @@ Rectangle {
             FlowListView {
                 id: list;
 
-                anchors.fill: parent
-                // highlight: highlight
-                // highlightFollowsCurrentItem: true;
+                highlight: highlight
+                highlightFollowsCurrentItem: true;
                 spacing: 16
 
                 model: launchers;
                 delegate: ColumnLayout {
+                    id: laucherDelegate
+
+                    property var dataModel;
+                    Component.onCompleted: {
+                        laucherDelegate.dataModel = Qt.binding(function () {return model});
+                    }
+
                     PlasmaCore.IconItem {
                         source: icon
                         Layout.topMargin: 11;
@@ -160,6 +180,8 @@ Rectangle {
                         anchors.fill: parent;
                         onClicked: list.currentIndex = index;
                     }
+
+
                 }
             }
         }
@@ -177,6 +199,15 @@ Rectangle {
                     damping: 0.2
                 }
             }
+
+            Behavior on x {
+                NumberAnimation {}
+            }
+            Behavior on y {
+                NumberAnimation {}
+            }
+
+            //NumberAnimation { duration: 300; properties: "x,y,width,height"; easing.type: Easing.InOutQuad }
         }
     }
 

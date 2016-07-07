@@ -57,7 +57,7 @@ QVariantMap LauncherModel::get(int row) {
         QModelIndex idx = index(row, 0);
         QVariant data = idx.data(i.key());
         res[i.value()] = data;
-        qDebug() << i.key() << ": " << i.value() << endl;
+        //qDebug() << i.key() << ": " << i.value() << data << endl;
     }
     return res;
 }
@@ -110,32 +110,37 @@ bool LauncherModel::setData(const QModelIndex & index, const QVariant & value, i
         // index requested must be valid, but we have no child items!
         return false;
     }
+     qDebug() << "Setting data " << role << value;
 
     QString filePath = entries.keys().at(index.row());
     QVariantMap properties = entries[filePath];
 
-    if (role == Qt::EditRole || role == Name)
-        properties["Name"] = value;
-    else if (role == Icon)
-        properties["Icon"] = value;
-    else if (role == Categories)
-        properties["Categories"] = value;
-    else if (role == Runner) {
-        properties["Runner"] = value;
-
-        QString runner = properties["Runner"].toString();
-        QString url = properties["Url"].toString();
-        properties["Exec"] = generateExec(runner, url);
+    switch(role) {
+        case Qt::EditRole:
+        case Name:
+            properties["Name"] = value;
+            break;
+        case Icon:
+            properties["Icon"] = value;
+            break;
+        case Categories:
+            properties["Categories"] = value;
+            break;
+        case Runner:
+            properties["Runner"] = value;
+            break;
+        case Url:
+            properties["Url"] = value;
+            break;
+        case Comment:
+            properties["Comment"] = value;
+            break;
     }
-    else if (role == Url) {
-        properties["Url"] = value;
+    entries[filePath] = properties;
 
-        QString runner = properties["Runner"].toString();
-        QString url = properties["Url"].toString();
-        properties["Exec"] = generateExec(runner, url);
-    }
-    else if (role == Comment)
-        properties["Comment"] = value;
+    QString runner = properties["Runner"].toString();
+    QString url = properties["Url"].toString();
+    properties["Exec"] = generateExec(runner, url);
 
     saveToFile(filePath, properties);
     emit dataChanged(index, index);
@@ -158,38 +163,19 @@ void LauncherModel::create(QString name, QString icon, QString categories, QStri
 
     properties["Type"] = "Application";
 
-
-
     saveToFile(filePath, properties);
 
     int last = entriesPaths.size();
-    beginInsertRows(QModelIndex(), 0, 0);
 
+    for (QString path: entriesPaths)
+        qDebug() << path;
+    qDebug() << last;
+    beginInsertRows(QModelIndex(), last, last);
     entries[filePath] = properties;
-    entriesPaths << filePath;
-
+    entriesPaths.insert(last, filePath);
     endInsertRows();
+
     emit countChanged();
-}
-
-void LauncherModel::update(int index, QString name, QString icon, QString categories, QString runner, QString url, QString comment) {
-    if (index < 0 || index >= entriesPaths.size())
-        return;
-
-    QString filePath = entriesPaths[index];
-    QVariantMap properties = entries[filePath];
-
-    properties["Name"] = name;
-    properties["Icon"] = icon;
-    properties["Categories"] = categories;
-    properties["Runner"] = runner;
-    properties["Url"] = url;
-    properties["Comment"] = comment;
-
-    properties["Exec"] = generateExec(runner, url);
-    properties["IceUtility"] = true;
-
-    saveToFile(filePath, properties);
 }
 
 void LauncherModel::remove(int index) {
@@ -221,8 +207,10 @@ QString LauncherModel::generateExec(QString runner, QString url) {
 
 void LauncherModel::saveToFile(QString path, QVariantMap properties) {
     qDebug() << "Saving entry: " << path;
-    QSettings settings(path, QSettings::IniFormat);
-    settings.beginGroup("Desktop Entry");
+    QSettings settings(path, QSettings::NativeFormat);
+    settings.setIniCodec("UTF-8");
+    QString groupName = "Desktop Entry";
+    settings.beginGroup(groupName);
 
     for (QString key: properties.keys())
         settings.setValue(key,properties[key]);
@@ -232,8 +220,10 @@ void LauncherModel::saveToFile(QString path, QVariantMap properties) {
 
 QVariantMap LauncherModel::loadFromFile(QString path) {
     qDebug() << "Loading entry: " << path;
-    QSettings settings(path, QSettings::IniFormat);
-    settings.beginGroup("Desktop Entry");
+    QSettings settings(path, QSettings::NativeFormat);
+    settings.setIniCodec("UTF-8");
+    QString groupName = "Desktop Entry";
+    settings.beginGroup(groupName);
 
     QVariantMap properties;
     for (QString key: settings.allKeys())
