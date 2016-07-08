@@ -8,6 +8,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 
 import org.kde.plasma.core 2.0 as PlasmaCore
+import QtWebKit 3.0
 
 import com.plasma_light.ice_utility 1.0
 
@@ -19,6 +20,7 @@ Rectangle {
         id: launchers;
     }
 
+
     Text {
         id: header
         text: i18n("Manage your web  applications")
@@ -29,6 +31,31 @@ Rectangle {
         anchors.right: parent.right;
         anchors.topMargin: 30;  anchors.bottomMargin: 19;
         anchors.leftMargin: 12; anchors.rightMargin: 8;
+    }
+
+
+
+    WebView {
+        id: webview
+        url: urlInput.text;
+        visible: false;
+        onLoadingChanged: {
+            switch (loadRequest.status) {
+                case WebView.LoadStartedStatus:
+                    print("loading content from " + loadRequest.url);
+                    break;
+                case WebView.LoadSucceededStatus:
+                    print("load succeded ");
+                    if (nameInput.text == "")
+                        nameInput.text = webview.title
+
+                    appIcon.source = webview.icon;
+                    break;
+                case WebView.LoadFailedStatus:
+                    print ("load failed " + loadRequest.errorString);
+                    break;
+            }
+        }
     }
 
     GroupBox {
@@ -62,10 +89,26 @@ Rectangle {
                 model: [ i18n("Select application category"), "Internet", "Multimedia", "Development" ];
             }
 
+            Image {
+                id: appIcon
+                height: 32; width: 32;
+                sourceSize.width: 32; sourceSize.height: 32;
+                onStatusChanged: {
+                    if (appIcon.status === Image.Ready) {
+                        appIcon.grabToImage(
+                                    function(result) {
+                                        var path = "~/" + list.currentItem.dataModel.name + ".png";
+                                        print (result);
+                                        print ("savin favicon to: " + path);
+                                        print (result.saveToFile(path));
+                                    });
+                    }
+                }
+            }
+
             CheckBox {
                     id: useCustomIcon;
                     text: i18n("Use custom icon");
-                    Layout.columnSpan: 2;
                 }
 
 
@@ -86,7 +129,13 @@ Rectangle {
 
             RowLayout {
                 Layout.columnSpan: 2;
-                TextField {id: customIconInput; placeholderText: i18n("Icon name or path"); Layout.fillWidth: true}
+                TextField {
+                    id: customIconInput;
+                    placeholderText: i18n("Icon name or path");
+                    Layout.fillWidth: true
+                    text : list.currentItem.dataModel.icon;
+                    onEditingFinished: list.currentItem.dataModel.icon = text;
+                }
 
 
                 Button {
@@ -98,6 +147,7 @@ Rectangle {
                 }
 
             }
+
             TextField {
                 id: descriptionInput;
                 placeholderText: i18n("Application description");
@@ -106,6 +156,8 @@ Rectangle {
                 text : list.currentItem.dataModel.comment;
                 onEditingFinished: list.currentItem.dataModel.comment = text;
             }
+
+
 
         }
     }
@@ -165,7 +217,7 @@ Rectangle {
                     PlasmaCore.IconItem {
                         source: icon
                         Layout.topMargin: 11;
-                        implicitHeight: 48; implicitWidth: 48;
+                        // implicitHeight: 48; implicitWidth: 48;
                         Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
                         Layout.fillWidth: true;
                     }
@@ -210,8 +262,5 @@ Rectangle {
             //NumberAnimation { duration: 300; properties: "x,y,width,height"; easing.type: Easing.InOutQuad }
         }
     }
-
-
-
 
 }
