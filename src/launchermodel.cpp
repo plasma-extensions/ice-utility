@@ -66,7 +66,7 @@ QVariantMap LauncherModel::get(int row) {
 }
 QStringList LauncherModel::runners() const {
     QStringList runners;
-    runners << "firefox";
+    runners << "Firefox";
     runners << "chromiun";
     return runners;
 }
@@ -213,9 +213,10 @@ void LauncherModel::remove(int index) {
 }
 
 QString LauncherModel::generateExec(QString runner, QString url) {
-    if (runner.compare("firefox") == 0)
+    qDebug() << "Generating exec for " << runner << " " << url;
+    if (runner.compare("Firefox") == 0)
         return QString("firefox %1").arg(url);
-    else if (runner.compare("chromiun") == 0)
+    else if (runner.compare("Chromiun") == 0)
         return QString("chromium --kiosk %1").arg(url);
 
     return "";

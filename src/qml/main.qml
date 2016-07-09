@@ -86,7 +86,13 @@ Rectangle {
             ComboBox {
                 id: categoryInput;
                 Layout.minimumWidth: 200
-                model: [ i18n("Select application category"), "Internet", "Multimedia", "Development" ];
+                model: [ i18n("Select application category"), "AudioVideo", "Audio", "Video", "Development", "Education", "Game", "Graphics", "Network", "Office", "Since", "Settings", "System", "Utility" ];
+                onCurrentIndexChanged: {
+                    if (currentIndex == 0)
+                        list.currentItem.dataModel.categories = "";
+                    else
+                        list.currentItem.dataModel.categories = currentText;
+                }
             }
 
             Image {
@@ -125,6 +131,12 @@ Rectangle {
                 id: runnerInput;
                 Layout.minimumWidth: 200
                 model: [ i18n("Select browser to use"), "Firefox", "Chromiun", "QWebKit"];
+                onCurrentIndexChanged: {
+                    if (currentIndex == 0)
+                        list.currentItem.dataModel.runner = "";
+                    else
+                        list.currentItem.dataModel.runner = currentText;
+                }
             }
 
             RowLayout {
@@ -235,6 +247,7 @@ Rectangle {
 
 
                 }
+            onCurrentItemChanged: fillFields(list.currentItem.dataModel);
             }
         }
 
@@ -263,4 +276,19 @@ Rectangle {
         }
     }
 
+    function fillFields(data) {
+        urlInput.text = data.url;
+        nameInput.text = data.name;
+        descriptionInput.text = data.comment;
+
+        var categoryIdx = categoryInput.model.indexOf(list.currentItem.dataModel.categories)
+        if (categoryIdx === -1)
+            categoryIdx = 0;
+        categoryInput.currentIndex = categoryIdx;
+
+        var runnerIdx = runnerInput.model.indexOf(list.currentItem.dataModel.runner)
+        if (runnerIdx === -1)
+            runnerIdx = 0;
+        runnerInput.currentIndex = runnerIdx;
+    }
 }
