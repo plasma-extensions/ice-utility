@@ -18,6 +18,9 @@ class LauncherModel : public QAbstractListModel
      */
     Q_PROPERTY(QStringList runners READ runners)
 
+    Q_PROPERTY(QString iconsCacheDirPath MEMBER m_iconsCacheDirPath READ iconsCacheDirPath)
+    Q_PROPERTY(QString entriesDirPath MEMBER m_entriesDirPath READ entriesDirPath)
+
     /**
      * @property int The number of rows of the model
      */
@@ -32,7 +35,8 @@ public:
         Categories,
         Runner,
         Url,
-        Comment
+        Comment,
+        UUID
     };
 
     LauncherModel(QObject *parent = 0);
@@ -40,8 +44,9 @@ public:
 
     Q_INVOKABLE QVariantMap get(int row);
 
-
     QStringList runners() const;
+    QString iconsCacheDirPath() const;
+    QString entriesDirPath() const;
 
     int rowCount(const QModelIndex&) const Q_DECL_OVERRIDE;
     int count() const;
@@ -63,8 +68,12 @@ private:
     QString generateExec(QString runner, QString url);
 
     QStringList entriesPaths;
-    QString entriesDirPath;
     QMap<QString, QVariantMap> entries;
+
+    QString m_iconsCacheDirPath;
+    QString m_entriesDirPath;
+    const QString CUSTOM_GROUP_NAME;
+    const QStringList CUSTOM_KEYS;
 };
 
 #endif // LAUNCHERMODEL_H

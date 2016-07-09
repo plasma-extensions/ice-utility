@@ -1,32 +1,34 @@
 #include "launchermodel.h"
 
+#include <QApplication>
 #include <QSettings>
 #include <QDebug>
 #include <QDir>
 #include <QUuid>
 
-LauncherModel::LauncherModel(QObject *parent) :
-    QAbstractListModel(parent), entriesDirPath(QDir::homePath() + "/.local/share/applications")
-{
+#include <KDesktopFile>
+#include <KConfigGroup>
 
-    QDir dir(entriesDirPath);
+LauncherModel::LauncherModel(QObject *parent) :
+    QAbstractListModel(parent),
+    m_entriesDirPath(QDir::homePath() + "/.local/share/applications"),
+    m_iconsCacheDirPath(QDir::homePath() + "/.local/share/" + QApplication::applicationName()),
+    CUSTOM_GROUP_NAME("Ice Util"),  CUSTOM_KEYS {"Url", "Runner", "Uuid"}
+{
+    QDir dir(m_entriesDirPath);
     dir.setFilter(QDir::Files);
 
     QStringList filters;
     filters << "*.desktop";
     dir.setNameFilters(filters);
 
-    qDebug() << "Looking entries at: " << entriesDirPath;
+    qDebug() << "Looking entries at: " << m_entriesDirPath;
     for (QString fileName: dir.entryList()) {
         const QString filePath = dir.filePath(fileName);
         qDebug() << "Scaning entry: " << filePath;
-        QSettings settings(filePath, QSettings::IniFormat);
+        KDesktopFile file(filePath);
 
-        settings.beginGroup("Desktop Entry");
-        QStringList keys = settings.allKeys();
-
-
-        if (keys.contains("IceUtility")) {
+        if (file.hasGroup(CUSTOM_GROUP_NAME)) {
             entriesPaths << dir.filePath(filePath);
             entries[filePath] = loadFromFile(dir.filePath(filePath));
         }
@@ -45,6 +47,7 @@ QHash<int, QByteArray> LauncherModel::roleNames() const
     roles.insert(Runner, "runner");
     roles.insert(Url, "url");
     roles.insert(Comment, "comment");
+    roles.insert(UUID, "uuid");
     return roles;
 }
 
@@ -66,6 +69,14 @@ QStringList LauncherModel::runners() const {
     runners << "firefox";
     runners << "chromiun";
     return runners;
+}
+
+QString LauncherModel::entriesDirPath() const {
+    return m_entriesDirPath;
+}
+
+QString LauncherModel::iconsCacheDirPath() const {
+    return m_iconsCacheDirPath;
 }
 
 int LauncherModel::rowCount(const QModelIndex& index) const {
@@ -100,6 +111,8 @@ QVariant LauncherModel::data(const QModelIndex& index, int role) const {
         return entry["Url"];
     else if (role == Comment)
         return entry["Comment"];
+    else if (role == UUID)
+        return entry["Uuid"];
 
     return QVariant();
 }
@@ -147,8 +160,8 @@ bool LauncherModel::setData(const QModelIndex & index, const QVariant & value, i
 }
 
 void LauncherModel::create(QString name, QString icon, QString categories, QString runner, QString url, QString comment) {
-    QString fileName = QUuid::createUuid().toString().toLower().remove('{').remove('}');
-    QString filePath = entriesDirPath + "/" + fileName + ".desktop";
+    QString uuid = QUuid::createUuid().toString().toLower().remove('{').remove('}');
+    QString filePath = m_entriesDirPath + "/" + uuid + ".desktop";
     qDebug() << "Creating new object " << filePath;
     QVariantMap properties;
     properties["Name"] = name;
@@ -157,9 +170,9 @@ void LauncherModel::create(QString name, QString icon, QString categories, QStri
     properties["Runner"] = runner;
     properties["Url"] = url;
     properties["Comment"] = comment;
+    properties["Uuid"] = uuid;
 
     properties["Exec"] = generateExec(runner, url);
-    properties["IceUtility"] = true;
 
     properties["Type"] = "Application";
 
@@ -183,6 +196,7 @@ void LauncherModel::remove(int index) {
         return;
 
     QString filePath = entriesPaths[index];
+    QString iconCacheDirPath = m_iconsCacheDirPath + "/" + entries[filePath]["Uuid"].toString() + ".png";
 
     beginRemoveRows(QModelIndex(), index, index);
     entriesPaths.removeOne(filePath);
@@ -192,6 +206,8 @@ void LauncherModel::remove(int index) {
     QFile file(filePath);
     file.remove();
 
+    QFile iconFile(iconCacheDirPath);
+    iconFile.remove();
 
     emit countChanged();
 }
@@ -207,27 +223,29 @@ QString LauncherModel::generateExec(QString runner, QString url) {
 
 void LauncherModel::saveToFile(QString path, QVariantMap properties) {
     qDebug() << "Saving entry: " << path;
-    QSettings settings(path, QSettings::NativeFormat);
-    settings.setIniCodec("UTF-8");
-    QString groupName = "Desktop Entry";
-    settings.beginGroup(groupName);
+    KDesktopFile file(path);
+    KConfigGroup group = file.desktopGroup();
+    KConfigGroup groupIU = file.group(CUSTOM_GROUP_NAME);
 
     for (QString key: properties.keys())
-        settings.setValue(key,properties[key]);
-
-    settings.endGroup();
+        if (CUSTOM_KEYS.contains(key))
+            groupIU.writeEntry(key,properties[key]);
+        else
+            group.writeEntry(key,properties[key]);
 }
 
 QVariantMap LauncherModel::loadFromFile(QString path) {
     qDebug() << "Loading entry: " << path;
-    QSettings settings(path, QSettings::NativeFormat);
-    settings.setIniCodec("UTF-8");
-    QString groupName = "Desktop Entry";
-    settings.beginGroup(groupName);
+    KDesktopFile file(path);
+    KConfigGroup group = file.desktopGroup();
+    KConfigGroup groupIU = file.group(CUSTOM_GROUP_NAME);
 
     QVariantMap properties;
-    for (QString key: settings.allKeys())
-        properties[key] = settings.value(key);
+    for (QString key: group.keyList())
+            properties[key] = group.readEntry(key);
+
+    for (QString key: groupIU.keyList())
+        properties[key] = groupIU.readEntry(key);
 
     return properties;
 }

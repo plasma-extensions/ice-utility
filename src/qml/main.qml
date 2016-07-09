@@ -97,7 +97,7 @@ Rectangle {
                     if (appIcon.status === Image.Ready) {
                         appIcon.grabToImage(
                                     function(result) {
-                                        var path = "~/" + list.currentItem.dataModel.name + ".png";
+                                        var path = launchers.iconsCacheDirPath + "/" + list.currentItem.dataModel.uuid + ".png";
                                         print (result);
                                         print ("savin favicon to: " + path);
                                         print (result.saveToFile(path));

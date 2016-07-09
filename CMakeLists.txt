@@ -43,10 +43,11 @@ ENDIF()
 # Find Qt
 FIND_PACKAGE(Qt5Core ${Qt_min_REQUIRED} REQUIRED)
 FIND_PACKAGE(Qt5Quick ${Qt_min_REQUIRED} REQUIRED)
+FIND_PACKAGE(Qt5Widgets ${Qt_min_REQUIRED} REQUIRED)
 
 # Add additional libraries
 # FIND_PACKAGE()
-
+FIND_PACKAGE(KF5Config)
 
 # Set default install path:
 IF(NOT CMAKE_INSTALL_PREFIX)
