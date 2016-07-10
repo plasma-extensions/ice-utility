@@ -49,7 +49,7 @@ Flickable {
     function refreshHighlightItemPosition(index) {
         var uiItem = repeater.itemAt(index);
 
-        if (!uiItem)
+        if (uiItem === null)
             highlightItem.visible = false;
         else
             highlightItem.visible = true;
@@ -77,6 +77,7 @@ Flickable {
                     if (flowListView.currentIndex >= count) {
                         flowListView.currentIndex = count - 1
                     }
+                    refreshHighlightItemPosition(flowListView.currentIndex)
                 }
             }
 

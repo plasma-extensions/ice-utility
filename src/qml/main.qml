@@ -1,7 +1,6 @@
-
 /*
  * My project
-  */
+      */
 import QtQuick 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
@@ -46,8 +45,9 @@ Rectangle {
         onStatusChanged: {
             if (appIcon.status === Image.Ready) {
                 appIcon.grabToImage(function (result) {
-                    if (result.saveToFile(list.currentItem.dataModel.favIconPath))
-                        list.currentItem.dataModel.favIcon = list.currentItem.dataModel.favIconPath;
+                    if (result.saveToFile(
+                                list.currentItem.dataModel.favIconPath))
+                        list.currentItem.dataModel.favIcon = list.currentItem.dataModel.favIconPath
                 })
             }
         }
@@ -78,18 +78,19 @@ Rectangle {
 
     Rectangle {
         id: details
-        color: "transparent";
+        color: "transparent"
 
-        border.width: 2;
-        border.color: "#BABCBE";
+        border.width: 2
+        border.color: "#BABCBE"
 
         anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.topMargin: 19
         anchors.leftMargin: 12
         anchors.rightMargin: 8
 
-        height: 160
+        height: 180
 
         GridLayout {
             anchors.fill: parent
@@ -101,32 +102,39 @@ Rectangle {
             Text {
                 text: i18n("Application details")
                 Layout.columnSpan: 4
+                Layout.leftMargin: 8
+                Layout.topMargin: 12
             }
 
             TextField {
                 id: urlInput
-                placeholderText: i18n("Application url")
                 Layout.fillWidth: true
+                Layout.leftMargin: 8
+
+                placeholderText: i18n("Application url")
                 onEditingFinished: webview.url = text
             }
 
             ComboBox {
                 id: runnerInput
                 Layout.minimumWidth: 200
-                model: [i18n(
-                        "Select browser to use"), "Firefox", "Chromiun"]
+
+                model: [i18n("Select browser to use"), "Firefox", "Chromiun"]
             }
 
             TextField {
                 id: customIconInput
-                placeholderText: i18n("Icon name or path")
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
+                Layout.rightMargin: 8
+
+                placeholderText: i18n("Icon name or path")
             }
 
             TextField {
                 id: nameInput
                 Layout.fillWidth: true
+                Layout.leftMargin: 8
 
                 placeholderText: i18n("Application name")
             }
@@ -142,65 +150,80 @@ Rectangle {
                 id: setFavIconButton
                 iconName: "edit-undo"
                 text: i18n("Set FavIcon")
-                enabled: list.currentItem.dataModel.favIcon != "";
-                onClicked: setFavIcon();
+                enabled: list.currentItem.dataModel.favIcon != ""
+                onClicked: setFavIcon()
             }
 
             Button {
                 id: chooseIconButton
+                Layout.rightMargin: 8
+
                 iconName: "folder-open"
                 text: i18n("Set Custom Icon")
-                onClicked: setCustomIcon();
+                onClicked: setCustomIcon()
             }
 
             TextField {
                 id: descriptionInput
-                placeholderText: i18n("Application description")
                 Layout.fillWidth: true
+                Layout.leftMargin: 8
+                Layout.bottomMargin: 12
                 Layout.columnSpan: 2
+
+                placeholderText: i18n("Application description")
             }
 
             Button {
                 id: saveButton
-                iconName: "document-save"
-                onClicked: storeEntryData()
+                Layout.columnSpan: 2
+                Layout.bottomMargin: 12
+
                 text: i18n("Apply")
-                Layout.alignment: Qt.AlignLeft
+                iconName: "document-save"
+
+                onClicked: storeEntryData()
             }
         }
     }
 
     Rectangle {
-        id: applicationsList;
-        color: "transparent";
+        id: applicationsList
+        color: "transparent"
 
-        border.width: 2;
-        border.color: "#BABCBE";
+        height: 202
+
+        border.width: 2
+        border.color: "#BABCBE"
 
         anchors.top: details.bottom
-        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.bottom: parent.bottom
         anchors.leftMargin: 12
         anchors.rightMargin: 8
+        anchors.topMargin: 12
+        anchors.bottomMargin: 30
 
-        RowLayout {
+        GridLayout {
             id: actionButtons
+            anchors.fill: parent
 
-            //layoutDirection: Qt.RightToLeft
-            anchors.left: parent.left
-            anchors.right: parent.right
+            columns: 4
+            rowSpacing: 12
+
             Text {
                 text: i18n("Application management")
+                Layout.fillWidth: true
+                Layout.columnSpan: 2
+
+                Layout.leftMargin: 8
+                Layout.topMargin: 13
             }
 
             Button {
-                text: "remove"
-                iconName: "list-remove"
-                onClicked: launchers.remove(list.currentIndex)
-            }
+                Layout.topMargin: 13
+                Layout.rightMargin: 8
 
-            Button {
                 text: "add"
                 iconName: "list-add"
                 onClicked: {
@@ -208,63 +231,91 @@ Rectangle {
                     list.currentIndex = launchers.count - 1
                 }
             }
-        }
 
-        ScrollView {
-            anchors.top: actionButtons.bottom
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
+            Button {
+                Layout.topMargin: 13
 
-            FlowListView {
-                id: list
+                text: "remove"
+                iconName: "list-remove"
+                onClicked: launchers.remove(list.currentIndex)
+                Layout.rightMargin: 8
+            }
 
-                highlight: highlight
-                highlightFollowsCurrentItem: true
-                spacing: 16
+            Rectangle {
+                Layout.leftMargin: 8
+                Layout.rightMargin: 8
+                Layout.topMargin: 11
+                Layout.bottomMargin: 11
 
-                model: launchers
-                delegate: ColumnLayout {
-                    id: laucherDelegate
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                    property var dataModel
-                    Component.onCompleted: {
-                        laucherDelegate.dataModel = Qt.binding(function () {
-                            return model
-                        })
-                    }
+                Layout.columnSpan: 4
 
-                    PlasmaCore.IconItem {
-                        source: icon == "" ? "preferences-web-browser-shortcuts" : icon
-                        Layout.topMargin: 11
-                        // implicitHeight: 48; implicitWidth: 48;
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        Layout.fillWidth: true
-                    }
-                    Text {
-                        text: name == "" ? "new application" : name
-                        Layout.topMargin: 5
-                        Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                        Layout.fillWidth: true
-                    }
+                border.width: 1
+                border.color: "#BABCBE"
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: list.currentIndex = index
+                ScrollView {
+                    anchors.fill: parent
+                    anchors.leftMargin: 16
+                    anchors.topMargin: 11
+
+                    FlowListView {
+                        id: list
+
+                        highlight: highlight
+                        highlightFollowsCurrentItem: true
+                        spacing: 16
+
+                        model: launchers
+                        delegate: itemDeledate
+                        onCurrentItemChanged: showEntryData(
+                                                  list.currentItem.dataModel)
                     }
                 }
-                onCurrentItemChanged: showEntryData(list.currentItem.dataModel)
             }
         }
     }
 
     Component {
+        id: itemDeledate
+        ColumnLayout {
+            id: laucherDelegate
+            anchors.margins: 4
+
+            property var dataModel
+            Component.onCompleted: {
+                laucherDelegate.dataModel = Qt.binding(function () {
+                    return model
+                })
+            }
+
+            PlasmaCore.IconItem {
+                source: icon == "" ? "preferences-web-browser-shortcuts" : icon
+                Layout.topMargin: 11
+                implicitHeight: 48
+                implicitWidth: 48
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.fillWidth: true
+            }
+            Text {
+                text: name == "" ? "new application" : name
+                Layout.topMargin: 5
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.fillWidth: true
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: list.currentIndex = index
+            }
+        }
+    }
+    Component {
         id: highlight
         Rectangle {
-            width: 180
-            height: 40
             color: "lightsteelblue"
-            radius: 5
+            radius: 0
             y: list.currentItem.y
             Behavior on y {
                 SpringAnimation {
@@ -323,11 +374,11 @@ Rectangle {
 
     function setFavIcon() {
         var data = list.currentItem.dataModel
-        customIconInput.text = data.favIconPath;
+        customIconInput.text = data.favIconPath
     }
 
     function setCustomIcon() {
-        fileDialog.visible = true;
+        fileDialog.visible = true
     }
 
     FileDialog {
@@ -335,7 +386,7 @@ Rectangle {
         title: "Please choose an icon"
         folder: shortcuts.home
         // modality: Qt.NonModal;
-        nameFilters: [ "Image files(*.jpg *.png *.svg)"]
-        onAccepted: customIconInput.text = fileDialog.fileUrl;
+        nameFilters: ["Image files(*.jpg *.png *.svg)"]
+        onAccepted: customIconInput.text = fileDialog.fileUrl
     }
 }
