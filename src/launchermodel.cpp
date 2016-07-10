@@ -13,7 +13,7 @@ LauncherModel::LauncherModel(QObject *parent) :
     QAbstractListModel(parent),
     m_entriesDirPath(QDir::homePath() + "/.local/share/applications"),
     m_iconsCacheDirPath(QDir::homePath() + "/.local/share/" + QApplication::applicationName()),
-    CUSTOM_GROUP_NAME("Ice Util"),  CUSTOM_KEYS {"Url", "Runner", "Uuid"}
+    CUSTOM_GROUP_NAME("Ice Util"),  CUSTOM_KEYS {"Url", "Runner", "Uuid", "FavIcon"}
 {
     QDir dir(m_entriesDirPath);
     dir.setFilter(QDir::Files);
@@ -48,6 +48,7 @@ QHash<int, QByteArray> LauncherModel::roleNames() const
     roles.insert(Url, "url");
     roles.insert(Comment, "comment");
     roles.insert(UUID, "uuid");
+    roles.insert(FavIcon, "favIcon");
     return roles;
 }
 
@@ -99,21 +100,25 @@ QVariant LauncherModel::data(const QModelIndex& index, int role) const {
     QVariantMap entry = entries[filePath];
 
 
-    if (role == Qt::DisplayRole || role == Name)
+    switch(role) {
+    case Qt::DisplayRole:
+    case Name:
         return entry["Name"];
-    else if (role == Icon)
+    case Icon:
         return entry["Icon"];
-    else if (role == Categories)
+    case Categories:
         return entry["Categories"];
-    else if (role == Runner)
+    case Runner:
         return entry["Runner"];
-    else if (role == Url)
+    case Url:
         return entry["Url"];
-    else if (role == Comment)
+    case Comment:
         return entry["Comment"];
-    else if (role == UUID)
+    case UUID:
         return entry["Uuid"];
-
+    case FavIcon:
+        return entry["FavIcon"];
+    }
     return QVariant();
 }
 
@@ -148,6 +153,9 @@ bool LauncherModel::setData(const QModelIndex & index, const QVariant & value, i
         case Comment:
             properties["Comment"] = value;
             break;
+        case FavIcon:
+            properties["FavIcon"] = value;
+            break;
     }
     entries[filePath] = properties;
 
@@ -171,6 +179,7 @@ void LauncherModel::create(QString name, QString icon, QString categories, QStri
     properties["Url"] = url;
     properties["Comment"] = comment;
     properties["Uuid"] = uuid;
+    properties["FavIcon"] = "";
 
     properties["Exec"] = generateExec(runner, url);
 

@@ -1,5 +1,6 @@
 #include <QtCore/QCoreApplication>
-#include <QtGui/QGuiApplication>
+//#include <QtGui/QGuiApplication>
+#include <QApplication>
 #include <QtQuick/QQuickView>
 #include <QtQml>
 
@@ -7,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QCoreApplication::setApplicationName("Ice Utility");
     QCoreApplication::setOrganizationDomain("com.plasma_light.ice_utility");

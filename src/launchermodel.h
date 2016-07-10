@@ -36,7 +36,8 @@ public:
         Runner,
         Url,
         Comment,
-        UUID
+        UUID,
+        FavIcon
     };
 
     LauncherModel(QObject *parent = 0);
