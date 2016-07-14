@@ -1,6 +1,6 @@
 
 # Define project your name
-SET(Project "IceUtility")
+SET(Project "ice-utility")
 
 # Project description
 SET(Project_desc "Small utility like peppermint ice.")
