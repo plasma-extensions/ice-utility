@@ -12,4 +12,4 @@ SET(Copyright "PlasmaLight")
 SET(Qt_min_REQUIRED 5.2.0)
 
 # Define project version x.y.z
-SET(ver 0.0.0)
+SET(ver 0.0.2)

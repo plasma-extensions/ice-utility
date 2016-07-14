@@ -119,7 +119,7 @@ Rectangle {
                 id: runnerInput
                 Layout.minimumWidth: 200
 
-                model: [i18n("Select browser to use"), "Firefox", "Chromiun"]
+                model: [i18n("Select browser to use"), "Firefox", "Chromiun", "Ice Utility"]
             }
 
             TextField {

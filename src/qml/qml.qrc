@@ -2,5 +2,6 @@
     <qresource prefix="/qml">
         <file>main.qml</file>
         <file>FlowListView.qml</file>
+        <file>SSB.qml</file>
     </qresource>
 </RCC>

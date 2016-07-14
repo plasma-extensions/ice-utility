@@ -68,7 +68,8 @@ QVariantMap LauncherModel::get(int row) {
 QStringList LauncherModel::runners() const {
     QStringList runners;
     runners << "Firefox";
-    runners << "chromiun";
+    runners << "Chromiun";
+    runners << "Ice Utility";
     return runners;
 }
 
@@ -227,6 +228,8 @@ QString LauncherModel::generateExec(QString runner, QString url) {
         return QString("firefox %1").arg(url);
     else if (runner.compare("Chromiun") == 0)
         return QString("chromium --kiosk %1").arg(url);
+    else if (runner.compare("Ice Utility") == 0)
+        return QString("IceUtility --url %1").arg(url);
 
     return "";
 }
