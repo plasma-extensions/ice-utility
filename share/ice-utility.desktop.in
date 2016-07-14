@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=0.2
+Name=Ice Utility
+GenericName=Ice Utility
+Comment=@Project_desc@
+Exec=@PROJECT_NAME@ 
+TryExec=@PROJECT_NAME@
+Icon=preferences-web-browser-shortcuts
+Terminal=false
+Type=Application
+Categories=Internet;

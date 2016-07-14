@@ -57,5 +57,7 @@ ENDIF()
 SET(PROJECT_INSTALL_BIN_DIR "bin")
 SET(PROJECT_INSTALL_LIB_DIR "lib")
 
+CONFIGURE_FILE( share/ice-utility.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/ice-utility.desktop)
+SET(DESCRIPTOR ${CMAKE_BINARY_DIR}/ice-utility.desktop)
 
 ADD_SUBDIRECTORY(src)
